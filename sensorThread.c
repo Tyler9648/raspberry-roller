@@ -67,6 +67,7 @@ void *sensor_thread(void* arg){         //thread function that constantly reads 
             while(exitThread == 0){
                 sensorArgs->value = sonarSensor(sensorArgs->pin, sensorArgs->trigger);
             }
+            break;
         default:            //invalid sensor type
             printf("invalid sensor type in sensorIR_thread: arg -> sensorArgs.senType\n");
             break;
@@ -91,29 +92,32 @@ int avoidSensor(int pin){   //reads 0 (LOW) when obstacle detected, reads 1 (HIG
 }
 
 //sonar sensor accurately reads between 2 cm and 200 cm so keep that in mind
-int sonarSensor(int pin, int trigger){  //returns distance between sonar and closest object in cm
+double sonarSensor(int pin, int trigger){  //returns distance between sonar and closest object in cm
     timedGPIOHigh(trigger, 15);         //start the sonar trigger
     clock_t echoUp, echoDown;
     float distance;
     while(gpioRead(pin) == 0){          //wait until we get echo input
+        echoUp = clock();
     }                                   //once we get echo input,             
-    echoUp = clock();                   //keep track of how when we first receive echo input
+                                        //keep track of how when we first receive echo input
     while(gpioRead(pin) != 0){          //wait until echoing stops
-    }                                   // -- IMPORTANT -- : if sonar sensor freezes, its probably cos of this line
-    echoDown = clock();                 //                   so if it freezes then add error handler to catch it
+        echoDown = clock();
+    }
+                                        // -- IMPORTANT -- : if sonar sensor freezes, its probably cos of this line
+                                        //  so if it freezes then add error handler to catch it
     float timeEchoedSecs;               //keep track of when echo input stops
     
     timeEchoedSecs = (float)(echoDown - echoUp) / CLOCKS_PER_SEC;   //calculate total uptime the echo input was up for
-
     distance = timeEchoedSecs * (float)SOUND_DIST_MULT * 100;       //calculate distance between sonar and object in cm
-    int intDist = floor(distance);
+    double doubleDist = (double) distance;
         //printf("measured distance of %f centimeters\n", distance);
         //printf("measured distance of %d centimeters\n", intDist);
-    return intDist;                    
+    return doubleDist;                    
 }
 
 int timedGPIOHigh(int trigger, int duration){     // takes gpio trigger pin, and duration in microseconds to seend HIGH (1) signal for 
-    gpioWrite(trigger, PI_HIGH);
+    gpioWrite(trigger, 1);
     usleep(duration);
-    gpioWrite(trigger, PI_LOW);
+    gpioWrite(trigger, 0);
+    return 0;
 }

@@ -26,17 +26,29 @@
 #include <pthread.h>
 #include "sensorThread.h"
 
-#define LINESENSOR_GPIO 19              // sensor gpio pins 
-#define AVOIDSENSOR_GPIO 26             // add EVERY GPIO pin used by sensors here
-#define SONARSENSOR_GPIO 23
-#define TRIGGER_GPIO 24
-                                        // add ENABLE_SENSOR for each sensor or sensor cluster
-#define ENABLE_LINESENSOR 1             // set to 1 to enable, 0 to disable
+#define LINESENSOR_GPIO 19              // sensor gpio pins
+
+#define LINESENSOR_ONE_GPIO 22
+#define LINESENSOR_TWO_GPIO 23
+#define LINESENSOR_THREE_GPIO 24
+#define LINESENSOR_FOUR_GPIO 25
+#define LINESENSOR_FIVE_GPIO 26
+
+#define AVOIDSENSOR_GPIO 15             // add EVERY GPIO pin used by sensors here
+#define SONARSENSOR_GPIO 13
+#define TRIGGER_GPIO 14
+
+#define ENABLE_LINESENSOR 0              // add ENABLE_SENSOR for each sensor or sensor cluster
+#define ENABLE_LINESENSOR_ONE 1             // set to 1 to enable, 0 to disable
+#define ENABLE_LINESENSOR_TWO 1
+#define ENABLE_LINESENSOR_THREE 1
+#define ENABLE_LINESENSOR_FOUR 1
+#define ENABLE_LINESENSOR_FIVE 1
 #define ENABLE_AVOIDSENSOR 1
 #define ENABLE_SONARSENSOR 1
 #define ENABLE_TEST 0
 
-#define NUMTHREADS (ENABLE_LINESENSOR + ENABLE_AVOIDSENSOR + ENABLE_TEST + ENABLE_SONARSENSOR)  // only need 2, one for each sensor
+#define NUMTHREADS (ENABLE_LINESENSOR + ENABLE_AVOIDSENSOR + ENABLE_TEST + ENABLE_SONARSENSOR + ENABLE_LINESENSOR_ONE + ENABLE_LINESENSOR_TWO + ENABLE_LINESENSOR_THREE + ENABLE_LINESENSOR_FOUR + ENABLE_LINESENSOR_FIVE)  // one for each sensor
                                         // can be changed if more sensors/components are added
 
 pthread_mutex_t exitLock;
@@ -50,7 +62,7 @@ pthread_t threadID[NUMTHREADS];         // sensor threads
 void progExit(int sig){                 // catch for ctr+c to exit so we can properly
     exitThread = 1;                                                                
 }
-
+/*
 void sensorLibInit(void){               // handles creation of all sensor threads
                                          // NOT used when testing main in sensorLib, only for car's main
                                          // completely replaces main in sensorLib in car implementation
@@ -126,9 +138,10 @@ void sensorLibTerminate(void){          // call after motors are terminated
 
     pthread_mutex_destroy(&exitLock);   // clean up
 }
-
+*/
 int main(int argc, char *argv[])        //main driver code, replace with functions to moduralize later, main should become sensorLibInit
 {  
+    printf("clock ticks %d\n", CLOCKS_PER_SEC);
     if (gpioInitialise() < 0){                          //initialize GPIO pins
         printf("\nGPIO initialization failed, now exiting\n\n");
         exit(0);
@@ -146,6 +159,11 @@ int main(int argc, char *argv[])        //main driver code, replace with functio
 
     //thread args
     tArg* lineSensorArgs;
+    tArg* lineSensorOneArgs;
+    tArg* lineSensorTwoArgs;
+    tArg* lineSensorThreeArgs;
+    tArg* lineSensorFourArgs;
+    tArg* lineSensorFiveArgs;
     tArg* avoidSensorArgs;
     tArg* testArgs;
     tArg* sonarSensorArgs;
@@ -161,6 +179,48 @@ int main(int argc, char *argv[])        //main driver code, replace with functio
         pthread_create(&threadID[activeThreads], NULL, &sensor_thread, (void*)lineSensorArgs);
         activeThreads++;
     }
+
+    if(ENABLE_LINESENSOR_ONE == 1){
+        lineSensorOneArgs = (tArg*)malloc(sizeof(tArg));
+        lineSensorOneArgs->senType = LINE;            
+        lineSensorOneArgs->pin = LINESENSOR_ONE_GPIO;
+        lineSensorOneArgs->value = -1;
+        pthread_create(&threadID[activeThreads], NULL, &sensor_thread, (void*)lineSensorOneArgs);
+        activeThreads++;
+    }
+    if(ENABLE_LINESENSOR_TWO == 1){
+        lineSensorTwoArgs = (tArg*)malloc(sizeof(tArg));
+        lineSensorTwoArgs->senType = LINE;            
+        lineSensorTwoArgs->pin = LINESENSOR_TWO_GPIO;
+        lineSensorTwoArgs->value = -1;
+        pthread_create(&threadID[activeThreads], NULL, &sensor_thread, (void*)lineSensorTwoArgs);
+        activeThreads++;
+    }
+    if(ENABLE_LINESENSOR_THREE == 1){
+        lineSensorThreeArgs = (tArg*)malloc(sizeof(tArg));
+        lineSensorThreeArgs->senType = LINE;            
+        lineSensorThreeArgs->pin = LINESENSOR_THREE_GPIO;
+        lineSensorThreeArgs->value = -1;
+        pthread_create(&threadID[activeThreads], NULL, &sensor_thread, (void*)lineSensorThreeArgs);
+        activeThreads++;
+    }
+    if(ENABLE_LINESENSOR_FOUR == 1){
+        lineSensorFourArgs = (tArg*)malloc(sizeof(tArg));
+        lineSensorFourArgs->senType = LINE;            
+        lineSensorFourArgs->pin = LINESENSOR_FOUR_GPIO;
+        lineSensorFourArgs->value = -1;
+        pthread_create(&threadID[activeThreads], NULL, &sensor_thread, (void*)lineSensorFourArgs);
+        activeThreads++;
+    }
+    if(ENABLE_LINESENSOR_FIVE == 1){
+        lineSensorFiveArgs = (tArg*)malloc(sizeof(tArg));
+        lineSensorFiveArgs->senType = LINE;            
+        lineSensorFiveArgs->pin = LINESENSOR_FIVE_GPIO;
+        lineSensorFiveArgs->value = -1;
+        pthread_create(&threadID[activeThreads], NULL, &sensor_thread, (void*)lineSensorFiveArgs);
+        activeThreads++;
+    }
+
     //prepare and launch avoidance sensor thread 
     if(ENABLE_AVOIDSENSOR == 1){
         avoidSensorArgs = (tArg*)malloc(sizeof(tArg));
@@ -204,6 +264,9 @@ int main(int argc, char *argv[])        //main driver code, replace with functio
             } else if(lineSensorArgs->value == 1){
                 printf("Line sensor: on black\n");   
             }
+        }
+        if(ENABLE_LINESENSOR_ONE + ENABLE_LINESENSOR_TWO + ENABLE_LINESENSOR_THREE + ENABLE_LINESENSOR_FOUR + ENABLE_LINESENSOR_FIVE == 5){
+            printf("%d %d %d %d %d\n", lineSensorOneArgs->value, lineSensorTwoArgs->value, lineSensorThreeArgs->value, lineSensorFourArgs->value, lineSensorFiveArgs->value);
         }
             
         if(ENABLE_AVOIDSENSOR == 1 && avoidSensorArgs){         //read avoid sensor to see if there 

@@ -35,6 +35,6 @@ typedef struct tArg{       // sensor thread arguments
 void *sensor_thread(void* arg);  
 int lineSensor(int pin);        //directly reads line sensor
 int avoidSensor(int pin);       //directly reads avoid sensor
-int sonarSensor(int pin, int trigger); //directly returns sonar distance
-
+double sonarSensor(int pin, int trigger); //directly returns sonar distance
+int timedGPIOHigh(int trigger, int duration); //sets pin to HIGH (1) for duration in micro secs 
 #endif
