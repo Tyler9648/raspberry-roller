@@ -1,9 +1,5 @@
 /*****************************************
 * Class:: CSC-615-01 Spring 2024
-* Name:: Tyler Hsieh
-* Student ID:: 920216320
-* Github-Name:: Tyler9648
-* Project:: sensor library
 *
 * File:: sensorLib.c 
 *
@@ -24,6 +20,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <pthread.h>
+//#include sensorLib.h                  //uncomment for car implementation
 #include "sensorThread.h"
 
 #define LINESENSOR_GPIO 19              // sensor gpio pins

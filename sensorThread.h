@@ -1,9 +1,5 @@
 /*****************************************
 * Class:: CSC-615-01 Spring 2024
-* Name:: Tyler Hsieh
-* Student ID:: 920216320
-* Github-Name:: Tyler9648
-* Project:: Assignment 4 - Follow in line but stop
 *
 * File:: sensorThread.h
 *
