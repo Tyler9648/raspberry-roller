@@ -305,7 +305,7 @@ int main(int argc, char *argv[])        //main driver code, replace with functio
             printf("\nThread closed, %d still running\n", activeThreads);
         }
     }
-    printf("\nAll threads closed, now cleaning up and exiting\n");
+    printf("\nAll threads closed, now cleaning up and closing sensorLib\n");
 
     pthread_mutex_destroy(&exitLock);   // clean up
     gpioTerminate();                    // unexport gpio pins
