@@ -157,7 +157,7 @@ int main(int argc, char *argv[])        //main driver code, replace with functio
 
     printf("# of sensors: %d\n", NUMTHREADS);
 
-    //thread args
+    //thread args, redeclare into car header later, when implementing car
     tArg* lineSensorArgs;
     tArg* lineSensorOneArgs;
     tArg* lineSensorTwoArgs;

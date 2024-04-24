@@ -65,6 +65,7 @@ void *sensor_thread(void* arg){         //thread function that constantly reads 
             gpioWrite(sensorArgs->trigger, PI_LOW);
             gpioSetMode(sensorArgs->pin, PI_INPUT);         //initialize echo pin
             while(exitThread == 0){
+                usleep(10000);
                 sensorArgs->value = sonarSensor(sensorArgs->pin, sensorArgs->trigger);
             }
             break;
@@ -94,15 +95,18 @@ int avoidSensor(int pin){   //reads 0 (LOW) when obstacle detected, reads 1 (HIG
 //sonar sensor accurately reads between 2 cm and 200 cm so keep that in mind
 double sonarSensor(int pin, int trigger){  //returns distance between sonar and closest object in cm
     timedGPIOHigh(trigger, 15);         //start the sonar trigger
+    uint32_t start = gpioTick();
     clock_t echoUp, echoDown;
     float distance;
-    while(gpioRead(pin) == 0){          //wait until we get echo input
-        echoUp = clock();
+    while((gpioRead(pin) == 0) && ((gpioTick() - start) < 14000)){ //wait up to 0.014 secs for echo input,
+        //echoUp = clock();                                        //
     }                                   //once we get echo input,             
-                                        //keep track of how when we first receive echo input
-    while(gpioRead(pin) != 0){          //wait until echoing stops
-        echoDown = clock();
+    echoUp = clock();                   //keep track of how when we first receive echo input
+    start = gpioTick();
+    while((gpioRead(pin) != 0) && ((gpioTick() - start) < 14000)){ //wait up to 0.014 secs for echoing to stop
+        //echoDown = clock();
     }
+    echoDown = clock();
                                         // -- IMPORTANT -- : if sonar sensor freezes, its probably cos of this line
                                         //  so if it freezes then add error handler to catch it
     float timeEchoedSecs;               //keep track of when echo input stops
@@ -111,7 +115,7 @@ double sonarSensor(int pin, int trigger){  //returns distance between sonar and 
     distance = timeEchoedSecs * (float)SOUND_DIST_MULT * 100;       //calculate distance between sonar and object in cm
     double doubleDist = (double) distance;
         //printf("measured distance of %f centimeters\n", distance);
-        //printf("measured distance of %d centimeters\n", intDist);
+        //printf("measured distance of %d centimeters\n", doubleDist);
     return doubleDist;                    
 }
 
