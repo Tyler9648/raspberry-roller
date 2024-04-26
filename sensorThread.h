@@ -24,6 +24,7 @@ typedef struct tArg{       // sensor thread arguments
     SENSORTYPE senType;    
     int pin, trigger;         // -> sensor's gpio pin, trigger pin only present for sonar 
     int value;             // -> sensor's read value, will be read from main loop
+    double lastSensorUpdateTime;  //
 } tArg;
 
      

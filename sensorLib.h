@@ -9,9 +9,10 @@
 
 #ifndef SENSOR_LIB
 #define SENSOR_LIB
+#include "sensorThread.h"
 
-void progExit(int sig);
+//void progExit(int sig);
 void sensorLibInit(void);
-void sensorLibInit(void);
+void sensorLibTerminate(void);
 
 #endif

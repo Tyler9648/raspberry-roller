@@ -42,13 +42,21 @@ void *sensor_thread(void* arg){         //thread function that constantly reads 
         case LINE:          //line sensor
             gpioSetMode(sensorArgs->pin, PI_INPUT);
             while(exitThread == 0){
+                int oldVal = 0 + sensorArgs->value;
                 sensorArgs->value = lineSensor(sensorArgs->pin);
+                if (oldVal != sensorArgs->value){
+                    sensorArgs->lastSensorUpdateTime = clock() / CLOCKS_PER_SEC;
+                }
             }
             break;
         case AVOID:         //avoidance sensor
             gpioSetMode(sensorArgs->pin, PI_INPUT);
             while(exitThread == 0){
+                int oldVal = 0 + sensorArgs->value;
                 sensorArgs->value = avoidSensor(sensorArgs->pin);
+                if (oldVal != sensorArgs->value){
+                    sensorArgs->lastSensorUpdateTime = clock() / CLOCKS_PER_SEC;
+                }
             }
             break;
         case TEST:          //for sensor free thread testing and debugging

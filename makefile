@@ -1,10 +1,10 @@
-ROOTNAME=sensorLib
+ROOTNAME=main
 CC=gcc
 CFLAGS= -g -I.
-DEPS = sensorThread.h
+DEPS = sensorLib.h globals.h sensorThread.h
 LIBS = -l pigpio -l pthread -lm
 
-OBJ = $(ROOTNAME).o sensorThread.o
+OBJ = $(ROOTNAME).o sensorLib.o sensorThread.o 
 #TESTOPTIONS = --leak-check=full
 
 %.o: %.c $(DEPS)
