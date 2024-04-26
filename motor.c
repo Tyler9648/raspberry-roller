@@ -113,8 +113,8 @@ void Motor_Accelerate(uint8_t motor, int startVelocity, int endVelocity, int dur
         current_t = clock();                                 //current number of clock ticks
 
         double durationSecs = duration / SEC_TO_MICROSEC;       
-
-        int currVelocity;                                       
+                                                            //REMINDER TO TEST THIS CHANGE LATER ->    duration_t = duration / 10 
+        int currVelocity;                                   //AND TO TEST w/o durationSecs cos im an idiot    
         duration_t = durationSecs * CLOCKS_PER_SEC_O;                                           //convert duration from seconds to clock_t (clock ticks per sec)
 
         end_t = start_t + duration_t;                   
