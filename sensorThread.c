@@ -61,8 +61,8 @@ void *sensor_thread(void* arg){         //thread function that constantly reads 
             gpioWrite(sensorArgs->trigger, PI_LOW);
             gpioSetMode(sensorArgs->pin, PI_INPUT);         //initialize echo pin
             while(exitThread == 0){
-                usleep(10000);
                 sensorArgs->value = sonarSensor(sensorArgs->pin, sensorArgs->trigger);
+                usleep(10000);
             }
             break;
         default:            //invalid sensor type
@@ -95,21 +95,25 @@ double sonarSensor(int pin, int trigger){  //returns distance between sonar and 
     clock_t echoUp, echoDown;
     float distance;
     while((gpioRead(pin) == 0) && ((gpioTick() - start) < 14000)){ //wait up to 0.014 secs for echo input,
+    
         //echoUp = clock();                                        //
     }                                   //once we get echo input,             
     echoUp = clock();                   //keep track of how when we first receive echo input
     start = gpioTick();
     while((gpioRead(pin) != 0) && ((gpioTick() - start) < 14000)){ //wait up to 0.014 secs for echoing to stop
+      
         //echoDown = clock();
     }
     echoDown = clock();
                                         // -- IMPORTANT -- : if sonar sensor freezes, its probably cos of this line
                                         //  so if it freezes then add error handler to catch it
     float timeEchoedSecs;               //keep track of when echo input stops
-    
+
     timeEchoedSecs = (float)(echoDown - echoUp) / CLOCKS_PER_SEC;   //calculate total uptime the echo input was up for
     distance = timeEchoedSecs * (float)SOUND_DIST_MULT * 100;       //calculate distance between sonar and object in cm
     double doubleDist = (double) distance;
+    //printf("time echoed in secs %f \n", timeEchoedSecs);
+
         //printf("measured distance of %f centimeters\n", distance);
         //printf("measured distance of %d centimeters\n", doubleDist);
     return doubleDist;                    
