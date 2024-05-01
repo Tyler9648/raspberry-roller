@@ -1,9 +1,7 @@
 /*****************************************
 * Class:: CSC-615-01 Spring 2024
-* Name:: Tyler Hsieh
-* Student ID:: 920216320
-* Github-Name:: Tyler9648
-* Project:: Assignment 3 - Start Your Motor
+*
+* Project:: car project, motor functinos
 *
 * File:: motor.c
 *
@@ -20,7 +18,9 @@
 #include <unistd.h>
 #include <signal.h>
 
-extern volatile sig_atomic_t exitProg;
+extern volatile sig_atomic_t exitThread;
+int motorASpeed;
+int motorBSpeed;
 
 
 /*
@@ -31,10 +31,19 @@ int Motor_Init(void)
     if (0 > motorLibInit()){
         printf("motorLib did not intialize properly\n");
         return -1;
-    }; 
+    }
     return 0;                       //intialize with slave address on I2C bus
 }                                   //higher frequency means that changing and 
                                     //maintaining motor speed is smoother
+
+
+void Motor_Terminate(void){
+    Motor_setVelocity(MOTORA, 0);
+    Motor_setVelocity(MOTORB, 0);
+    motorLib_setPWMFreq(0);
+    motorLib_terminate();
+    printf("Motors terminate successfully... I hope.. \n");
+}
 
 /**
  * Set motor's velocity (direction and speed)
@@ -66,6 +75,21 @@ void Motor_setVelocity(uint8_t motor, int velocity){
     uint8_t speed = abs(velocity);       //speed of motors should not exceed 100%
     if (speed > 100)
         speed = 100;
+
+    switch (motor)
+    {
+    case MOTORA:
+        motorASpeed = speed;
+        printf("Motor: A ");
+        break;
+    case MOTORB:
+        motorBSpeed = speed;
+        printf("Motor: B ");
+        break;
+    default:
+        printf("error updating motor speed\n");
+        break;
+    }
 
     motorLib_setPWMDutyCycle(PWM, speed); //set motor's speed, is proportional to duty cycle
     if(velocity >= 0){                   //go forwards if positive
@@ -121,7 +145,7 @@ void Motor_Accelerate(uint8_t motor, int startVelocity, int endVelocity, int dur
 
         float percentageElapsed = ((float)current_t - (float)start_t) / (float)duration_t;      //percent of duration time elapsed
  
-        while(current_t <= end_t && exitProg == 0){                                                              //gradually change velocity over duration
+        while(current_t <= end_t && exitThread == 0){                                                              //gradually change velocity over duration
             percentageElapsed = ((float)current_t - (float)start_t ) / (float)duration_t;       //goes from 0 to 100 as acceleration nears completion
             currVelocity = startVelocity + ( percentageElapsed * (endVelocity - startVelocity));  //velocity linearly changes with time
             Motor_setVelocity(motor, currVelocity);    

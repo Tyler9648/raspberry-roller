@@ -1,15 +1,12 @@
 /*****************************************
 * Class:: CSC-615-01 Spring 2024
-* Name:: Tyler Hsieh
-* Student ID:: 920216320
-* Github-Name:: Tyler9648
-* Project:: Assignment 3 - Start Your Motor
+*
+* Project:: car project, motor functions
 *
 * File:: motor.h
 *
 * Description:: Motor driver that controls speed,
 * direction, and intialization of motors. 
-*
 *
 ******************************************/
 #ifndef __MOTOR_
@@ -37,4 +34,5 @@
 int Motor_Init(void);
 void Motor_Accelerate(uint8_t motor, int startVelocity, int endVelocity, int duration);
 void Motor_setVelocity(uint8_t motor, int velocity);
+void Motor_Terminate(void);
 #endif

@@ -6,7 +6,7 @@
 #include <pthread.h>
 #include <time.h>
 #include "sensorLib.h" // already includes sensorThread.h
-//#include "steering.h"  // includes motor.h
+#include "steering.h"  // includes motor.h
 #include "globals.h"   // global variables
 
 /* GLOBAL VARIABLE INITIALIZATION */
@@ -35,10 +35,13 @@ int main(int argc, char *argv[]) {
         printf("gpio initialization succeeded!\n");
     }
     sensorLibInit();
+    initSteering();
     signal(SIGINT, progExit);
 
     while(exitThread == 0){
         pthread_mutex_lock(&exitLock); 
+        //steer();
+        steerTest();
         printf("%d %d %d %d %d\n", lineSensorOneArgs->value, lineSensorTwoArgs->value, lineSensorThreeArgs->value, lineSensorFourArgs->value, lineSensorFiveArgs->value);
         double avoidTimeSinceUpdate = (clock() / CLOCKS_PER_SEC ) - avoidSensorArgs->lastSensorUpdateTime; 
         printf("\nAvoid sensor last changed %f seconds ago\n", avoidTimeSinceUpdate);
@@ -58,6 +61,7 @@ int main(int argc, char *argv[]) {
         usleep(100000);
     }
     printf("now terminating\n");
+    terminateSteering();
     sensorLibTerminate();
     gpioTerminate();
     return 0;
