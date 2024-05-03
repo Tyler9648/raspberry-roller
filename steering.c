@@ -1,7 +1,7 @@
 #include "steering.h"
 extern volatile sig_atomic_t exitThread;
 
-#define     BASE_SPEED       50
+#define     BASE_SPEED       80
 
 // I don't know what to name this variable, just stores if the 
 // car is going forwards or backwards
@@ -123,12 +123,12 @@ int steerTest() {
     //struct sensorOnLine * lineDetectedBy = malloc(sizeof(struct sensorOnLine)); 
         Motor_setVelocity(MOTORA, BASE_SPEED);  
         Motor_setVelocity(MOTORB, BASE_SPEED); 
-        int sleepVal = 15000;
+        int sleepVal = 16000;
     //for sharp turns, slow down the speed
     if (lineSensorThreeArgs->value == 1 && (lineSensorOneArgs->value == 1 || lineSensorFiveArgs->value == 1) && (lineSensorOneArgs->value != lineSensorFiveArgs->value)){
         Motor_setVelocity(MOTORA, BASE_SPEED/2);  
         Motor_setVelocity(MOTORB, BASE_SPEED/2); 
-        sleepVal = 10000;
+        sleepVal = 11000;
     }
     while(exitThread==0 && getSum() != 0){      //while its not an intersection or not dead center on the line
         int steerValue = getSum();    
@@ -184,7 +184,9 @@ int getSum(/*struct sensorOnLine * sensorInfo*/) {
        intSum = (int) (sum / sensorsTriggered);         //it is totally intentional to have it 0.5 be rounded down to 0
     }                                                   //when converting double to int, for averaging sum of 1 between 
                                                         //a middle and inner line sensor
-    prevSum = intSum;
+    if(intSum != 0){
+        prevSum = intSum;
+    }
     //printf("getSum -> intSum: %d\n", intSum);
     return intSum;  
     
