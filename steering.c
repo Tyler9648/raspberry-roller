@@ -1,13 +1,15 @@
 #include "steering.h"
 extern volatile sig_atomic_t exitThread;
 
+#define     BASE_SPEED       50
+
 // I don't know what to name this variable, just stores if the 
 // car is going forwards or backwards
 int behavior = FORWARD; 
 int leftSpeed = 0;
 int rightSpeed = 0;
 double timeMiddleOnLine; // time before middle sensor left the line
-
+int prevSum = 0;
 // should we have 2 different functions for correcting the error on the line
 // and another for steering around an object?
 // CURRENTLY IT ONLY STEERS RIGHT
@@ -119,14 +121,26 @@ int getError(struct sensorOnLine * sensorInfo) {
 
 int steerTest() {
     //struct sensorOnLine * lineDetectedBy = malloc(sizeof(struct sensorOnLine)); 
-        Motor_setVelocity(MOTORA, 25);  
-        Motor_setVelocity(MOTORB, 25); 
-    while(exitThread==0){
+        Motor_setVelocity(MOTORA, BASE_SPEED);  
+        Motor_setVelocity(MOTORB, BASE_SPEED); 
+        int sleepVal = 15000;
+    //for sharp turns, slow down the speed
+    if (lineSensorThreeArgs->value == 1 && (lineSensorOneArgs->value == 1 || lineSensorFiveArgs->value == 1) && (lineSensorOneArgs->value != lineSensorFiveArgs->value)){
+        Motor_setVelocity(MOTORA, BASE_SPEED/2);  
+        Motor_setVelocity(MOTORB, BASE_SPEED/2); 
+        sleepVal = 10000;
+    }
+    while(exitThread==0 && getSum() != 0){      //while its not an intersection or not dead center on the line
         int steerValue = getSum();    
         Motor_setVelocity(MOTORA, motorASpeed + steerValue);  //assume currSpeed is updated by setVelocity, and is between -100 to 100
         Motor_setVelocity(MOTORB, motorBSpeed - steerValue);  //this doesn't require encoder cus im lazy, but if needed can be changed
-        usleep(30000);    
+        usleep(sleepVal);     
     }
+    /*
+    if(lineSensorThreeArgs->value == 1){
+        Motor_setVelocity(MOTORA, 25);  
+        Motor_setVelocity(MOTORB, 25);      
+    }*/
     return 0;
 }
 
@@ -135,22 +149,44 @@ int getSum(/*struct sensorOnLine * sensorInfo*/) {
     // 0.025 m (placeholder val), should we use different measurement unit?
 
     // start with outter sensors?
-    int sum = 0;
-
+    double sum = 0;
+    int sensorsTriggered = 0;
     if (lineSensorOneArgs->value == 1) {
-    sum -= 1;
-    }
-    if (lineSensorFiveArgs->value == 1) {
-    sum += 1;
+        sum -= 3;
+        sensorsTriggered++;
     }
     if (lineSensorTwoArgs->value == 1) {
-    sum -= 1;
+        sum -= 1;
+        sensorsTriggered++;
+    }
+    if (lineSensorThreeArgs->value == 1) {
+        sensorsTriggered++;
     }
     if (lineSensorFourArgs->value == 1) {
-    sum += 1;
+        sum += 1;
+        sensorsTriggered++;
+    }
+    if (lineSensorFiveArgs->value == 1) {
+        sum += 3;
+        sensorsTriggered++;
     }
 
-    return sum;
+    if(sensorsTriggered == 0){
+        //printf("getSum -> prevSum: %d\n", prevSum);
+        return prevSum;
+    }
+
+    int intSum;
+    if (lineSensorThreeArgs->value == 1 && (lineSensorOneArgs->value == 1 || lineSensorFiveArgs->value == 1) && (lineSensorOneArgs->value != lineSensorFiveArgs->value)){
+       intSum = (int) (  sum / (sensorsTriggered - 1)  );       //this is really scuffed but it works
+       intSum = (intSum / abs(intSum)) * 4;              //4 is total sum of one side of sensors 
+    } else {
+       intSum = (int) (sum / sensorsTriggered);         //it is totally intentional to have it 0.5 be rounded down to 0
+    }                                                   //when converting double to int, for averaging sum of 1 between 
+                                                        //a middle and inner line sensor
+    prevSum = intSum;
+    //printf("getSum -> intSum: %d\n", intSum);
+    return intSum;  
     
 }
 // int followLine() { // used to test steering 
