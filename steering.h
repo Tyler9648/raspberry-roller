@@ -14,6 +14,7 @@ extern tArg* lineSensorTwoArgs;
 extern tArg* lineSensorThreeArgs;
 extern tArg* lineSensorFourArgs;
 extern tArg* lineSensorFiveArgs;
+extern tArg* sonarSensorArgs;
 extern int motorASpeed;
 extern int motorBSpeed;
 

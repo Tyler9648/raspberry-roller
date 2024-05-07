@@ -187,10 +187,16 @@ int getSum(/*struct sensorOnLine * sensorInfo*/) {
     if(intSum != 0){
         prevSum = intSum;
     }
+    if(sonarSensorArgs->value >= 0){
+        printf("Sonar sensor from Steering: distance is %d\n", sonarSensorArgs->value);
+    }
+    
     //printf("getSum -> intSum: %d\n", intSum);
     return intSum;  
     
 }
+
+
 // int followLine() { // used to test steering 
 //     Motor_Init();
 
