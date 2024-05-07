@@ -1,3 +1,15 @@
+/************************************************************************************************
+ * Class:: CSC-615-01 Spring 2024
+ *
+ * Project:: Autonomous Line-Following Car
+ *
+ * File:: servoTest.c
+ *
+ * Description:: This file is a test suite for the servo control functionality
+ *               in the autonomous car project. It includes tests to initialize the servo motor
+ *               and move it to various predefined positions: right, left, and forward.
+ ************************************************************************************************/
+
 #include "servo.h"
 #include <stdio.h>
 #include <pigpio.h>
@@ -7,20 +19,21 @@
 
 int main()
 {
-    if (Servo_Init() < 0) {
+    if (Servo_Init() < 0)
+    {
         printf("Failed to initialize servo motor.\n");
         return 1;
     }
-        usleep(2000000);
+    usleep(2000000);
     printf("Pan right...\n");
     Pan_Right();
-        usleep(2000000);
+    usleep(2000000);
     printf("Pan left...\n");
     Pan_Left();
-        usleep(2000000);
+    usleep(2000000);
     printf("Pan forward...\n");
     Pan_Forward();
-        usleep(3000000);
+    usleep(3000000);
     gpioTerminate(); // Clean up GPIO
     return 0;
 }
