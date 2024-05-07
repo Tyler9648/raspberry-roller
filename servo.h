@@ -1,3 +1,15 @@
+/***************************************************************************************************
+ * Class:: CSC-615-01 Spring 2024
+ *
+ * Project:: Autonomous Line-Following Car
+ *
+ * File:: servo.h
+ *
+ * Description:: This header file defines the interface for controlling servo motors
+ *               in the autonomous car project. It includes definitions for the servo control
+ *               pin, PWM frequency, and predefined positions for panning right, left, and forward.
+ **************************************************************************************************/
+
 #ifndef __SERVO_
 #define __SERVO_
 
