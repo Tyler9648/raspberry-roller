@@ -18,16 +18,19 @@
 #include <time.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <pigpio.h>
 #include <math.h>
 #include <stdio.h>
 #include <unistd.h>
 #include "sensorLib.h" // temporarily here, not sure if should be here
+#include "servo.h"
 
 extern tArg* lineSensorOneArgs;
 extern tArg* lineSensorTwoArgs;
 extern tArg* lineSensorThreeArgs;
 extern tArg* lineSensorFourArgs;
 extern tArg* lineSensorFiveArgs;
+extern tArg *sonarSensorArgs;
 extern int motorASpeed;
 extern int motorBSpeed;
 
@@ -58,10 +61,14 @@ struct sensorOnLine
 
 int initSteering();
 void terminateSteering();
+void avoidObstacle();
+void testAvoidObstacle();
 int steer();
 int getError(struct sensorOnLine *sensorInfo);
 
 int steerTest();
 int getSum();
+
+int obsDetected();
 
 #endif // STEERING_H

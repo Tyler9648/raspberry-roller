@@ -26,6 +26,7 @@
 #include "sensorLib.h" // already includes sensorThread.h
 #include "steering.h"  // includes motor.h
 #include "globals.h"   // global variables
+#include "servo.h"
 
 /* GLOBAL VARIABLE INITIALIZATION */
 volatile sig_atomic_t exitThread = 0;
@@ -59,7 +60,9 @@ int main(int argc, char *argv[])
     }
     sensorLibInit();
     initSteering();
+    Servo_Init();
     signal(SIGINT, progExit);
+    usleep(2500000);    
 
     while (exitThread == 0)
     {
@@ -68,6 +71,7 @@ int main(int argc, char *argv[])
         // Motor_setVelocity(MOTORB, -50);
         printf("%d %d %d %d %d\n", lineSensorOneArgs->value, lineSensorTwoArgs->value, lineSensorThreeArgs->value, lineSensorFourArgs->value, lineSensorFiveArgs->value);
         steerTest();
+
         double avoidTimeSinceUpdate = (clock() / CLOCKS_PER_SEC) - avoidSensorArgs->lastSensorUpdateTime;
         printf("\nAvoid sensor last changed %f seconds ago\n", avoidTimeSinceUpdate);
         if (avoidSensorArgs->value == 0)

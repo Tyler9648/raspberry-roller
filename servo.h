@@ -15,9 +15,9 @@
 
 #define SERVO_PIN 12
 #define PWD_FREQ 50
-#define RIGHT 500
-#define LEFT 2500
-#define FORWARD 1500
+#define SERVO_RIGHT 620     //old 500
+#define SERVO_LEFT 2500
+#define SERVO_FORWARD 1500
 
 int Servo_Init(void);
 void Pan_Right();

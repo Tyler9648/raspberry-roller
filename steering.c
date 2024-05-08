@@ -14,7 +14,8 @@
 #include "steering.h"
 extern volatile sig_atomic_t exitThread;
 
-#define BASE_SPEED 80
+#define BASE_SPEED 70
+#define AVOIDANCE_SPEED 60 // base speed when going around in obstacle
 
 // I don't know what to name this variable, just stores if the
 // car is going forwards or backwards
@@ -29,6 +30,7 @@ int prevSum = 0;
 
 int initSteering()
 {
+
     return Motor_Init();
 }
 
@@ -137,12 +139,31 @@ int getError(struct sensorOnLine *sensorInfo)
     }
 }
 
+int obsDetected(void){
+    if (sonarSensorArgs->value <= 38 && sonarSensorArgs->value > 0){
+        return 1;
+    } else {
+        return 0;
+    }
+   
+}
+
 int steerTest()
 {
     // struct sensorOnLine * lineDetectedBy = malloc(sizeof(struct sensorOnLine));
     Motor_setVelocity(MOTORA, BASE_SPEED);
     Motor_setVelocity(MOTORB, BASE_SPEED);
     int sleepVal = 16000;
+
+    // Obstacle detected
+    //if (sonarSensorArgs->value <= 30 && sonarSensorArgs->value > 0)
+    if (obsDetected() == 1)
+    {
+        printf("Obstacle detected: distance is %d\n", sonarSensorArgs->value);
+        avoidObstacle();
+        //testAvoidObstacle();
+    }
+
     // for sharp turns, slow down the speed
     if (lineSensorThreeArgs->value == 1 && (lineSensorOneArgs->value == 1 || lineSensorFiveArgs->value == 1) && (lineSensorOneArgs->value != lineSensorFiveArgs->value))
     {
@@ -150,7 +171,7 @@ int steerTest()
         Motor_setVelocity(MOTORB, BASE_SPEED / 2);
         sleepVal = 11000;
     }
-    while (exitThread == 0 && getSum() != 0)
+    while (exitThread == 0 && getSum() != 0 && obsDetected() == 0)
     { // while its not an intersection or not dead center on the line
         int steerValue = getSum();
         Motor_setVelocity(MOTORA, motorASpeed + steerValue); // assume currSpeed is updated by setVelocity, and is between -100 to 100
@@ -163,6 +184,124 @@ int steerTest()
         Motor_setVelocity(MOTORB, 25);
     }*/
     return 0;
+}
+
+void avoidObstacle()
+{
+
+    // Stop
+    Motor_setVelocity(MOTORA, 0);
+    Motor_setVelocity(MOTORB, 0);
+    usleep(1000000);
+    Pan_Right();
+    // Turn left
+    Motor_setVelocity(MOTORA, -40);
+    Motor_setVelocity(MOTORB, 40);
+    usleep(1000000);
+
+    Motor_setVelocity(MOTORA, 0);
+    Motor_setVelocity(MOTORB, 0);
+    usleep(1000000);
+
+    Motor_setVelocity(MOTORA, AVOIDANCE_SPEED);
+    Motor_setVelocity(MOTORB, AVOIDANCE_SPEED);
+    // loop aroun in circle intil
+    //  Move Forward
+    while (lineSensorThreeArgs->value != 1 && exitThread == 0)
+    {
+        printf("sonar distance: %d\n", sonarSensorArgs->value);
+        int motorAadjust = 1;
+        int motorBadjust = 1;
+
+        if (sonarSensorArgs->value < 28)
+        {
+            if((motorASpeed - 1) <= 40){
+                motorAadjust = 0;
+            }
+            if((motorBSpeed + 1) >= 80){
+                motorBadjust = 0;
+            }
+            Motor_setVelocity(MOTORA, motorASpeed - motorAadjust);
+            Motor_setVelocity(MOTORB, motorBSpeed + motorBadjust);
+        }
+        else if (//(sonarSensorArgs->value > 15)&&
+            (sonarSensorArgs->value < 35))
+            {
+                Motor_setVelocity(MOTORA, AVOIDANCE_SPEED);
+                Motor_setVelocity(MOTORB, AVOIDANCE_SPEED);
+            }
+        else
+        {
+            if((motorASpeed + 1) >= 80){
+                motorAadjust = 0;
+            }
+            if((motorBSpeed - 1) <= 40){
+                motorBadjust = 0;
+            }
+            Motor_setVelocity(MOTORA, motorASpeed + motorAadjust);
+            Motor_setVelocity(MOTORB, motorBSpeed - motorBadjust);
+        }
+        usleep(20000);
+    }
+    Pan_Forward();
+    printf("\nwere back on the line\n");
+    //     usleep(2000000);
+    //    // Pan_Forward();
+    //     Motor_setVelocity(MOTORA, 0);
+    //     Motor_setVelocity(MOTORB, 0);
+    //     usleep(1000000);
+    //     // maybe if statement
+    //     Motor_setVelocity(MOTORA, 40 * (1 + sonarSensorArgs->value);
+    //     Motor_setVelocity(MOTORB, -40 * (1 + sonarSensorArgs->value);
+    //     usleep(1000000);
+    //     Motor_setVelocity(MOTORA, 50);
+    //     Motor_setVelocity(MOTORB, 50);
+    //     usleep(1000000);
+}
+
+void testAvoidObstacle()
+{
+
+    // Stop
+    Motor_setVelocity(MOTORA, 0);
+    Motor_setVelocity(MOTORB, 0);
+    usleep(1000000);
+    Pan_Right();
+    // Turn left
+
+    //Motor_setVelocity(MOTORA, -40);
+    Motor_setVelocity(MOTORB, 40);
+    //usleep(1000000);
+    usleep(2000000);
+
+    Motor_setVelocity(MOTORA, 0);
+    Motor_setVelocity(MOTORB, 0);
+    usleep(1000000);
+
+    Motor_setVelocity(MOTORA, AVOIDANCE_SPEED);
+    Motor_setVelocity(MOTORB, AVOIDANCE_SPEED);
+    // loop aroun in circle intil
+    //  Move Forward
+    while (lineSensorThreeArgs->value != 1 && exitThread == 0)
+    {
+        printf("sonar distance: %d\n", sonarSensorArgs->value);
+        if (sonarSensorArgs->value >= 20 && sonarSensorArgs->value <= 38){
+            Motor_setVelocity(MOTORA, AVOIDANCE_SPEED);
+            Motor_setVelocity(MOTORB, AVOIDANCE_SPEED);
+        }
+        else {
+        double adjust = (sonarSensorArgs->value - 25) * pow( 1.05, abs(30 - sonarSensorArgs->value)/12 );
+        printf("adjsut val: %f\n", adjust);
+        if (adjust < 0){
+            adjust *= 3;
+        }
+        Motor_setVelocity(MOTORA, motorASpeed + (int) (adjust * 0.02));
+        Motor_setVelocity(MOTORB, motorBSpeed - (int) (adjust * 0.02));
+        }
+        usleep(150000);
+    }
+    Pan_Forward();                              //cat: w3e0p-2p
+    printf("\nwere back on the line\n");
 }
 
 int getSum(/*struct sensorOnLine * sensorInfo*/)
@@ -219,24 +358,11 @@ int getSum(/*struct sensorOnLine * sensorInfo*/)
     {
         prevSum = intSum;
     }
-<<<<<<< HEAD
-    if(sonarSensorArgs->value >= 0){
-        printf("Sonar sensor from Steering: distance is %d\n", sonarSensorArgs->value);
-    }
-    
-    //printf("getSum -> intSum: %d\n", intSum);
-    return intSum;  
-    
-}
-
-
-// int followLine() { // used to test steering 
-=======
     // printf("getSum -> intSum: %d\n", intSum);
     return intSum;
 }
+
 // int followLine() { // used to test steering
->>>>>>> 5b37f92b4468bd38012aeed8d41e9ab9f8b15838
 //     Motor_Init();
 
 //     // add code that corrects for the error once we get info from sensors

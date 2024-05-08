@@ -78,8 +78,23 @@ void *sensor_thread(void *arg)
         gpioSetMode(sensorArgs->pin, PI_INPUT); // initialize echo pin
         while (exitThread == 0)
         {
-            sensorArgs->value = sonarSensor(sensorArgs->pin, sensorArgs->trigger);
-            usleep(10000);
+            double distArr[5];
+            int i;
+            for(i = 0; i < 5; i++){
+                distArr[i] = sonarSensor(sensorArgs->pin, sensorArgs->trigger);
+                usleep(2000);
+            }
+            qsort(distArr, 5, sizeof(double), comp);
+            double tempVal = distArr[2];
+
+            //double tempVal = sonarSensor(sensorArgs->pin, sensorArgs->trigger);
+            
+            //if ((int) tempVal > 0){
+                sensorArgs->value = floor( (tempVal * 0.5) + (sensorArgs->value * 0.5) );
+                //sensorArgs->value = tempVal;
+            //}
+
+            usleep(8000);   //OLD: 10000
         }
         break;
     default: // invalid sensor type
@@ -90,7 +105,7 @@ void *sensor_thread(void *arg)
     // exit thread now
     pthread_mutex_lock(&exitLock); // mutex lock to protect argument deallocation
     printf("\nfreeing allocated thread args in thread: %d\n", pthread_self());
-    free(arg); // free arg that was malloced from main
+    free(arg); // free arg that was malloced from main, move this to main later
     arg = NULL;
     pthread_mutex_unlock(&exitLock);
 }
@@ -133,11 +148,22 @@ double sonarSensor(int pin, int trigger)
 
     timeEchoedSecs = (float)(echoDown - echoUp) / CLOCKS_PER_SEC; // calculate total uptime the echo input was up for
     distance = timeEchoedSecs * (float)SOUND_DIST_MULT * 100;     // calculate distance between sonar and object in cm
-    double doubleDist = (double)distance;
+    double doubleDist = (double)distance * 0.6;
     // printf("time echoed in secs %f \n", timeEchoedSecs);
 
     // printf("measured distance of %f centimeters\n", distance);
     // printf("measured distance of %d centimeters\n", doubleDist);
+    if(doubleDist > 150){
+        doubleDist = 150;
+    } 
+    else if(doubleDist < 1){
+        //doubleDist = 200;
+        usleep(8000);
+        return sonarSensor(pin, trigger);
+    } /*else if(doubleDist == 0){
+        doubleDist = 1;
+    }*/
+    //printf("raw distance: %f cm\n", doubleDist);
     return doubleDist;
 }
 
@@ -147,4 +173,12 @@ int timedGPIOHigh(int trigger, int duration)
     usleep(duration);
     gpioWrite(trigger, 0);
     return 0;
+}
+
+int comp(const void *a, const void *b)
+{
+  const double *da = (const double *) a;
+  const double *db = (const double *) b;
+
+  return (*da > *db) - (*da < *db);
 }
