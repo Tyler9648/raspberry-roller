@@ -94,7 +94,7 @@ void *sensor_thread(void *arg)
                 //sensorArgs->value = tempVal;
             //}
 
-            usleep(8000);   //OLD: 10000
+            usleep(5000);   //OLD: 10000
         }
         break;
     default: // invalid sensor type
@@ -158,7 +158,7 @@ double sonarSensor(int pin, int trigger)
     } 
     else if(doubleDist < 1){
         //doubleDist = 200;
-        usleep(8000);
+        usleep(5000);
         return sonarSensor(pin, trigger);
     } /*else if(doubleDist == 0){
         doubleDist = 1;

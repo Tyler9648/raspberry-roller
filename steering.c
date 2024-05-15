@@ -140,7 +140,7 @@ int getError(struct sensorOnLine *sensorInfo)
 }
 
 int obsDetected(void){
-    if (sonarSensorArgs->value <= 38 && sonarSensorArgs->value > 0){
+    if ((sonarSensorArgs->value <= 27 && sonarSensorArgs->value > 0) || avoidSensorArgs->value == 0){   //recent
         return 1;
     } else {
         return 0;
@@ -174,6 +174,7 @@ int steerTest()
     while (exitThread == 0 && getSum() != 0 && obsDetected() == 0)
     { // while its not an intersection or not dead center on the line
         int steerValue = getSum();
+        //printf("getSum: %d \n", steerValue);
         Motor_setVelocity(MOTORA, motorASpeed + steerValue); // assume currSpeed is updated by setVelocity, and is between -100 to 100
         Motor_setVelocity(MOTORB, motorBSpeed - steerValue); // this doesn't require encoder cus im lazy, but if needed can be changed
         usleep(sleepVal);
@@ -213,7 +214,7 @@ void avoidObstacle()
         int motorAadjust = 1;
         int motorBadjust = 1;
 
-        if (sonarSensorArgs->value < 28)
+        if (sonarSensorArgs->value < 25)            //too close to obstacle
         {
             if((motorASpeed - 1) <= 40){
                 motorAadjust = 0;
@@ -221,11 +222,15 @@ void avoidObstacle()
             if((motorBSpeed + 1) >= 80){
                 motorBadjust = 0;
             }
+            if(sonarSensorArgs->value < 14){        //IF IT IS REALLY WAY TOO CLOSE TO THE OBSTACLE
+                motorAadjust *= 2;
+                motorBadjust *= 2;
+            }
             Motor_setVelocity(MOTORA, motorASpeed - motorAadjust);
             Motor_setVelocity(MOTORB, motorBSpeed + motorBadjust);
         }
         else if (//(sonarSensorArgs->value > 15)&&
-            (sonarSensorArgs->value < 35))
+            (sonarSensorArgs->value < 38))
             {
                 Motor_setVelocity(MOTORA, AVOIDANCE_SPEED);
                 Motor_setVelocity(MOTORB, AVOIDANCE_SPEED);
@@ -245,6 +250,9 @@ void avoidObstacle()
     }
     Pan_Forward();
     printf("\nwere back on the line\n");
+    Motor_setVelocity(MOTORA, -30);
+    Motor_setVelocity(MOTORB, 30);
+    usleep(1000000);
     //     usleep(2000000);
     //    // Pan_Forward();
     //     Motor_setVelocity(MOTORA, 0);
@@ -314,12 +322,12 @@ int getSum(/*struct sensorOnLine * sensorInfo*/)
     int sensorsTriggered = 0;
     if (lineSensorOneArgs->value == 1)
     {
-        sum -= 3;
+        sum += 3;
         sensorsTriggered++;
     }
     if (lineSensorTwoArgs->value == 1)
     {
-        sum -= 1;
+        sum += 1;
         sensorsTriggered++;
     }
     if (lineSensorThreeArgs->value == 1)
@@ -328,12 +336,12 @@ int getSum(/*struct sensorOnLine * sensorInfo*/)
     }
     if (lineSensorFourArgs->value == 1)
     {
-        sum += 1;
+        sum -= 1;
         sensorsTriggered++;
     }
     if (lineSensorFiveArgs->value == 1)
     {
-        sum += 3;
+        sum -= 3;
         sensorsTriggered++;
     }
 
