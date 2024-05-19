@@ -54,6 +54,30 @@ void *sensor_thread(void *arg)
             }
         }
         break;
+
+    case MULTI_LINE:
+        gpioSetMode(sensorArgs->pin1, PI_INPUT);
+        gpioSetMode(sensorArgs->pin2, PI_INPUT);
+        gpioSetMode(sensorArgs->pin3, PI_INPUT);
+        gpioSetMode(sensorArgs->pin4, PI_INPUT);
+        gpioSetMode(sensorArgs->pin5, PI_INPUT);
+        while (exitThread == 0)
+        {
+            // int oldVal = 0 + sensorArgs->value1 + sensorArgs->value2 + sensorArgs->value3 + sensorArgs->value4 + sensorArgs->value5;
+            sensorArgs->value1 = lineSensor(sensorArgs->pin1);
+            sensorArgs->value2 = lineSensor(sensorArgs->pin2);
+            sensorArgs->value3 = lineSensor(sensorArgs->pin3);
+            sensorArgs->value4 = lineSensor(sensorArgs->pin4);
+            sensorArgs->value5 = lineSensor(sensorArgs->pin5);
+            //oldVal -=  (sensorArgs->value1 + sensorArgs->value2 + sensorArgs->value3 + sensorArgs->value4 + sensorArgs->value5);
+            //if (oldVal != 0)
+            //{
+            //    sensorArgs->lastSensorUpdateTime = clock() / CLOCKS_PER_SEC;
+            //}
+            
+        }
+        break;
+
     case AVOID: // avoidance sensor
         gpioSetMode(sensorArgs->pin, PI_INPUT);
         while (exitThread == 0)

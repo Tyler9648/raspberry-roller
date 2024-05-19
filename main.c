@@ -39,6 +39,7 @@ tArg *lineSensorFiveArgs;
 tArg *avoidSensorArgs;
 tArg *testArgs;
 tArg *sonarSensorArgs;
+tArg *multiLineSensorArgs;
 extern pthread_mutex_t exitLock;
 
 void progExit(int sig)
@@ -69,7 +70,10 @@ int main(int argc, char *argv[])
         pthread_mutex_lock(&exitLock);
         // steer();
         // Motor_setVelocity(MOTORB, -50);
-        printf("%d %d %d %d %d\n", lineSensorOneArgs->value, lineSensorTwoArgs->value, lineSensorThreeArgs->value, lineSensorFourArgs->value, lineSensorFiveArgs->value);
+        //printf("%d %d %d %d %d\n", lineSensorOneArgs->value, lineSensorTwoArgs->value, lineSensorThreeArgs->value, lineSensorFourArgs->value, lineSensorFiveArgs->value);
+        
+        printf("%d %d %d %d %d\n", multiLineSensorArgs->value1, multiLineSensorArgs->value2, multiLineSensorArgs->value3, multiLineSensorArgs->value4, multiLineSensorArgs->value5);
+        
         steerTest();
 
         double avoidTimeSinceUpdate = (clock() / CLOCKS_PER_SEC) - avoidSensorArgs->lastSensorUpdateTime;

@@ -19,7 +19,8 @@ typedef enum
     LINE = 0,  // -> Line sensor
     AVOID = 1, // -> Obstacle sensor
     TEST = 2,  // -> used for thread debugging
-    SONAR = 3  // -> Sonar sensor, requires 2 pins
+    SONAR = 3,  // -> Sonar sensor, requires 2 pins
+    MULTI_LINE = 4  // -> 5 line sensors 
 } SENSORTYPE;
 
 typedef struct tArg
@@ -28,6 +29,9 @@ typedef struct tArg
     int pin, trigger;            // -> sensor's gpio pin, trigger pin only present for sonar
     int value;                   // -> sensor's read value, will be read from main loop
     double lastSensorUpdateTime; //
+    int pin1, pin2, pin3, pin4, pin5;
+    int value1, value2, value3, value4, value5;
+
 } tArg;
 
 void *sensor_thread(void *arg);

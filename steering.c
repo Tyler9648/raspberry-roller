@@ -165,7 +165,7 @@ int steerTest()
     }
 
     // for sharp turns, slow down the speed
-    if (lineSensorThreeArgs->value == 1 && (lineSensorOneArgs->value == 1 || lineSensorFiveArgs->value == 1) && (lineSensorOneArgs->value != lineSensorFiveArgs->value))
+    if (multiLineSensorArgs->value3 == 1 && (multiLineSensorArgs->value1 == 1 || multiLineSensorArgs->value5 == 1) && (multiLineSensorArgs->value1 != multiLineSensorArgs->value5))
     {
         Motor_setVelocity(MOTORA, BASE_SPEED / 2);
         Motor_setVelocity(MOTORB, BASE_SPEED / 2);
@@ -208,7 +208,7 @@ void avoidObstacle()
     Motor_setVelocity(MOTORB, AVOIDANCE_SPEED);
     // loop aroun in circle intil
     //  Move Forward
-    while (lineSensorThreeArgs->value != 1 && exitThread == 0)
+    while (multiLineSensorArgs->value3 != 1 && exitThread == 0)
     {
         printf("sonar distance: %d\n", sonarSensorArgs->value);
         int motorAadjust = 1;
@@ -320,26 +320,26 @@ int getSum(/*struct sensorOnLine * sensorInfo*/)
     // start with outter sensors?
     double sum = 0;
     int sensorsTriggered = 0;
-    if (lineSensorOneArgs->value == 1)
+    if (multiLineSensorArgs->value1 == 1)
     {
         sum += 3;
         sensorsTriggered++;
     }
-    if (lineSensorTwoArgs->value == 1)
+    if (multiLineSensorArgs->value2 == 1)
     {
         sum += 1;
         sensorsTriggered++;
     }
-    if (lineSensorThreeArgs->value == 1)
+    if (multiLineSensorArgs->value3 == 1)
     {
         sensorsTriggered++;
     }
-    if (lineSensorFourArgs->value == 1)
+    if (multiLineSensorArgs->value4 == 1)
     {
         sum -= 1;
         sensorsTriggered++;
     }
-    if (lineSensorFiveArgs->value == 1)
+    if (multiLineSensorArgs->value5 == 1)
     {
         sum -= 3;
         sensorsTriggered++;
@@ -352,7 +352,7 @@ int getSum(/*struct sensorOnLine * sensorInfo*/)
     }
 
     int intSum;
-    if (lineSensorThreeArgs->value == 1 && (lineSensorOneArgs->value == 1 || lineSensorFiveArgs->value == 1) && (lineSensorOneArgs->value != lineSensorFiveArgs->value))
+    if (multiLineSensorArgs->value3 == 1 && (multiLineSensorArgs->value1 == 1 || multiLineSensorArgs->value5 == 1) && (multiLineSensorArgs->value1 != multiLineSensorArgs->value5))
     {
         intSum = (int)(sum / (sensorsTriggered - 1)); // this is really scuffed but it works
         intSum = (intSum / abs(intSum)) * 4;          // 4 is total sum of one side of sensors

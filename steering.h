@@ -25,6 +25,7 @@
 #include "sensorLib.h" // temporarily here, not sure if should be here
 #include "servo.h"
 
+extern tArg* multiLineSensorArgs;
 extern tArg* lineSensorOneArgs;
 extern tArg* lineSensorTwoArgs;
 extern tArg* lineSensorThreeArgs;

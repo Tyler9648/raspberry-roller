@@ -34,16 +34,17 @@
 #define TRIGGER_GPIO 14
 
 #define ENABLE_LINESENSOR 0     // add ENABLE_SENSOR for each sensor or sensor cluster
-#define ENABLE_LINESENSOR_ONE 1 // set to 1 to enable, 0 to disable
-#define ENABLE_LINESENSOR_TWO 1
-#define ENABLE_LINESENSOR_THREE 1
-#define ENABLE_LINESENSOR_FOUR 1
-#define ENABLE_LINESENSOR_FIVE 1
+#define ENABLE_LINESENSOR_ONE 0 // set to 1 to enable, 0 to disable
+#define ENABLE_LINESENSOR_TWO 0
+#define ENABLE_LINESENSOR_THREE 0
+#define ENABLE_LINESENSOR_FOUR 0
+#define ENABLE_LINESENSOR_FIVE 0
 #define ENABLE_AVOIDSENSOR 1
 #define ENABLE_SONARSENSOR 1
 #define ENABLE_TEST 0
+#define ENABLE_MULTI_LINESENSOR 1
 
-#define NUMTHREADS (ENABLE_LINESENSOR + ENABLE_AVOIDSENSOR + ENABLE_TEST + ENABLE_SONARSENSOR + ENABLE_LINESENSOR_ONE + ENABLE_LINESENSOR_TWO + ENABLE_LINESENSOR_THREE + ENABLE_LINESENSOR_FOUR + ENABLE_LINESENSOR_FIVE) // one for each sensor
+#define NUMTHREADS ( (5 * ENABLE_MULTI_LINESENSOR) + ENABLE_LINESENSOR + ENABLE_AVOIDSENSOR + ENABLE_TEST + ENABLE_SONARSENSOR + ENABLE_LINESENSOR_ONE + ENABLE_LINESENSOR_TWO + ENABLE_LINESENSOR_THREE + ENABLE_LINESENSOR_FOUR + ENABLE_LINESENSOR_FIVE) // one for each sensor
                                                                                                                                                                                                                            // can be changed if more sensors/components are added
 
 pthread_mutex_t exitLock;
@@ -55,6 +56,7 @@ extern tArg *lineSensorTwoArgs;
 extern tArg *lineSensorThreeArgs;
 extern tArg *lineSensorFourArgs;
 extern tArg *lineSensorFiveArgs;
+extern tArg *multiLineSensorArgs;
 extern tArg *avoidSensorArgs;
 extern tArg *testArgs;
 extern tArg *sonarSensorArgs;
@@ -142,6 +144,25 @@ void sensorLibInit(void)
         pthread_create(&threadID[activeThreads], NULL, &sensor_thread, (void *)lineSensorFiveArgs);
         activeThreads++;
     }
+    if (ENABLE_MULTI_LINESENSOR == 1)
+    {
+        multiLineSensorArgs = (tArg *)malloc(sizeof(tArg));
+        multiLineSensorArgs->senType = MULTI_LINE;
+        multiLineSensorArgs->pin1 = LINESENSOR_ONE_GPIO;
+        multiLineSensorArgs->pin2 = LINESENSOR_TWO_GPIO;
+        multiLineSensorArgs->pin3 = LINESENSOR_THREE_GPIO;
+        multiLineSensorArgs->pin4 = LINESENSOR_FOUR_GPIO;
+        multiLineSensorArgs->pin5 = LINESENSOR_FIVE_GPIO;
+        multiLineSensorArgs->value1 = -1;
+        multiLineSensorArgs->value2 = -1;
+        multiLineSensorArgs->value3 = -1;
+        multiLineSensorArgs->value4 = -1;
+        multiLineSensorArgs->value5 = -1;
+        multiLineSensorArgs->lastSensorUpdateTime = 0;
+        pthread_create(&threadID[activeThreads], NULL, &sensor_thread, (void *)multiLineSensorArgs);
+        activeThreads++;
+    }
+ 
     // prepare and launch avoidance sensor thread
     if (ENABLE_AVOIDSENSOR == 1)
     {
