@@ -65,30 +65,29 @@ void Motor_setVelocity(uint8_t motor, int velocity)
 
     if (motor == MOTORA)
     { // assign IN1, IN2, and PWM to selected motor's IN and PWM channel
-        // DEBUG("Motor A selected\n");
         IN1 = AIN1;
         IN2 = AIN2;
         PWM = PWMA;
     }
     else
     {
-        // DEBUG("Motor B selected\n");
         IN1 = BIN1;
         IN2 = BIN2;
         PWM = PWMB;
     }
     uint8_t speed = abs(velocity); // speed of motors should not exceed 100%
-    if (speed > 100)
+    if (speed > 100){
+        velocity = 100 * (velocity / speed);
         speed = 100;
-
+    }
     switch (motor)
     {
     case MOTORA:
-        motorASpeed = speed;
+        motorASpeed = velocity;
         printf("Motor: A ");
         break;
     case MOTORB:
-        motorBSpeed = speed;
+        motorBSpeed = velocity;
         printf("Motor: B ");
         break;
     default:
@@ -99,13 +98,13 @@ void Motor_setVelocity(uint8_t motor, int velocity)
     motorLib_setPWMDutyCycle(PWM, speed); // set motor's speed, is proportional to duty cycle
     if (velocity >= 0)
     { // go forwards if positive
-        printf("Velocity: %d\n", speed);
+        printf("Velocity: %d\n", velocity);
         motorLib_setLevel(IN1, 0);
         motorLib_setLevel(IN2, 1);
     }
     else
     { // go backwards if negative
-        printf("Velocity: %d\n", -speed);
+        printf("Velocity: %d\n", velocity);
         motorLib_setLevel(IN1, 1);
         motorLib_setLevel(IN2, 0);
     }

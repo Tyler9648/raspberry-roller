@@ -49,27 +49,18 @@ void motorLib_setPWMFreq(uint16_t freq)
     uint8_t prescale = floor(prescaleVal + 0.5);
 
     uint8_t oldmode = i2cReadByteData(motorDriverHandle, MODE1);
-
+    
+    // set the ocilator to sleep mode to modify pre_scale register
     uint8_t newmode = (oldmode & 0x7F) | 0x10; // sleep
 
     i2cWriteByteData(motorDriverHandle, MODE1, newmode);
 
+    // change the prescale (ocilator's frequency)
     i2cWriteByteData(motorDriverHandle, PRESCALE, prescale);
 
+    // wake ocilator and restore previous mode
     i2cWriteByteData(motorDriverHandle, MODE1, oldmode);
 
-    // usleep(5000);
-
-    // i2cWriteByteData(motorDriverHandle, MODE1, oldmode | 0x80);
-
-    // i2cWriteByteData(motorDriverHandle, MODE1, 0x10); // dissable the ocilator (set it to sleep mode) to
-    //  change the pre_scale register (the ocilator's frequency)
-
-    // uint8_t test = 60; //0x3C;
-    // i2cWriteByteData(motorDriverHandle, PRESCALE, prescale);
-
-    // wake up the ocilator after changing value
-    // i2cWriteByteData(motorDriverHandle, MODE1, 0x00);
 }
 
 static void motorLib_setPWM(uint8_t channel, uint16_t on, uint16_t off)

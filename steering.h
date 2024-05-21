@@ -36,39 +36,12 @@ extern tArg* avoidSensorArgs;
 extern int motorASpeed;
 extern int motorBSpeed;
 
-enum direction
-{
-    FORWARD,
-    BACKWARD,
-    LEFT,
-    RIGHT
-};
-
-// PLACEHOLDER WEIGHTS FOR SENSOR
-enum lineWeight
-{
-    LEFT_SENS = -2,
-    LEFT_MID_SENS = -1,
-    MID_SENS = 0,
-    RIGHT_MID_SENS = 1,
-    RIGHT_SENS = 2
-};
-
-// struct to hold information about sensor to calculate error
-struct sensorOnLine
-{
-    double sensorUpdateTime;
-    double distanceFromMiddle;
-};
-
 int initSteering();
 void terminateSteering();
 void avoidObstacle();
 void testAvoidObstacle();
-int steer();
-int getError(struct sensorOnLine *sensorInfo);
 
-int steerTest();
+int steer();
 int getSum();
 
 int obsDetected();

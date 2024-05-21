@@ -25,8 +25,9 @@
 #include <time.h>
 #include "sensorLib.h" // already includes sensorThread.h
 #include "steering.h"  // includes motor.h
-#include "globals.h"   // global variables
+//#include "globals.h"   // global variables
 #include "servo.h"
+#define UPDATE_FREQ 50000
 
 /* GLOBAL VARIABLE INITIALIZATION */
 volatile sig_atomic_t exitThread = 0;
@@ -40,7 +41,6 @@ tArg *avoidSensorArgs;
 tArg *testArgs;
 tArg *sonarSensorArgs;
 tArg *multiLineSensorArgs;
-extern pthread_mutex_t exitLock;
 
 void progExit(int sig)
 { // catch for ctr+c to exit so we can properly
@@ -67,14 +67,10 @@ int main(int argc, char *argv[])
 
     while (exitThread == 0)
     {
-        pthread_mutex_lock(&exitLock);
-        // steer();
-        // Motor_setVelocity(MOTORB, -50);
-        //printf("%d %d %d %d %d\n", lineSensorOneArgs->value, lineSensorTwoArgs->value, lineSensorThreeArgs->value, lineSensorFourArgs->value, lineSensorFiveArgs->value);
         
-        printf("%d %d %d %d %d\n", multiLineSensorArgs->value1, multiLineSensorArgs->value2, multiLineSensorArgs->value3, multiLineSensorArgs->value4, multiLineSensorArgs->value5);
+        printf("%d %d %d %d %d\n", multiLineSensorArgs->value5, multiLineSensorArgs->value4, multiLineSensorArgs->value3, multiLineSensorArgs->value2, multiLineSensorArgs->value1);
         
-        steerTest();
+        steer();
 
         double avoidTimeSinceUpdate = (clock() / CLOCKS_PER_SEC) - avoidSensorArgs->lastSensorUpdateTime;
         printf("\nAvoid sensor last changed %f seconds ago\n", avoidTimeSinceUpdate);
@@ -94,8 +90,7 @@ int main(int argc, char *argv[])
         if(testArgs->value >= 0) {
             printf("test value displaying: %d\n", testArgs->value);
         }*/
-        pthread_mutex_unlock(&exitLock);
-        usleep(100000);
+        usleep(UPDATE_FREQ); //old 100000
     }
     printf("now terminating\n");
     terminateSteering();

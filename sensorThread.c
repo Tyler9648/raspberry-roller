@@ -24,6 +24,7 @@
 #include "sensorThread.h"
 
 #define SOUND_DIST_MULT 170
+#define SONAR_DIST_CAP 150
 
 extern volatile sig_atomic_t exitThread;
 extern pthread_mutex_t exitLock;
@@ -63,17 +64,11 @@ void *sensor_thread(void *arg)
         gpioSetMode(sensorArgs->pin5, PI_INPUT);
         while (exitThread == 0)
         {
-            // int oldVal = 0 + sensorArgs->value1 + sensorArgs->value2 + sensorArgs->value3 + sensorArgs->value4 + sensorArgs->value5;
             sensorArgs->value1 = lineSensor(sensorArgs->pin1);
             sensorArgs->value2 = lineSensor(sensorArgs->pin2);
             sensorArgs->value3 = lineSensor(sensorArgs->pin3);
             sensorArgs->value4 = lineSensor(sensorArgs->pin4);
             sensorArgs->value5 = lineSensor(sensorArgs->pin5);
-            //oldVal -=  (sensorArgs->value1 + sensorArgs->value2 + sensorArgs->value3 + sensorArgs->value4 + sensorArgs->value5);
-            //if (oldVal != 0)
-            //{
-            //    sensorArgs->lastSensorUpdateTime = clock() / CLOCKS_PER_SEC;
-            //}
             
         }
         break;
@@ -100,25 +95,20 @@ void *sensor_thread(void *arg)
         gpioSetMode(sensorArgs->trigger, PI_OUTPUT); // initialize trigger
         gpioWrite(sensorArgs->trigger, PI_LOW);
         gpioSetMode(sensorArgs->pin, PI_INPUT); // initialize echo pin
-        while (exitThread == 0)
-        {
+        while (exitThread == 0)                     //  finds the median distance of 5 sonar calls
+        {                                           //  to reduce the chance of outliers
             double distArr[5];
             int i;
             for(i = 0; i < 5; i++){
                 distArr[i] = sonarSensor(sensorArgs->pin, sensorArgs->trigger);
-                usleep(2000);
+    
             }
             qsort(distArr, 5, sizeof(double), comp);
             double tempVal = distArr[2];
-
-            //double tempVal = sonarSensor(sensorArgs->pin, sensorArgs->trigger);
             
-            //if ((int) tempVal > 0){
-                sensorArgs->value = floor( (tempVal * 0.5) + (sensorArgs->value * 0.5) );
-                //sensorArgs->value = tempVal;
-            //}
-
-            usleep(5000);   //OLD: 10000
+            sensorArgs->value = floor( (tempVal * 0.5) + (sensorArgs->value * 0.5) );   //  reducees effect of sharp changes/outliers 
+                                                                                        //  from sonar readings 
+            usleep(1000);   //OLD: 5000
         }
         break;
     default: // invalid sensor type
@@ -127,11 +117,11 @@ void *sensor_thread(void *arg)
     }
 
     // exit thread now
-    pthread_mutex_lock(&exitLock); // mutex lock to protect argument deallocation
+    //pthread_mutex_lock(&exitLock); // mutex lock to protect argument deallocation
     printf("\nfreeing allocated thread args in thread: %d\n", pthread_self());
     free(arg); // free arg that was malloced from main, move this to main later
     arg = NULL;
-    pthread_mutex_unlock(&exitLock);
+    //pthread_mutex_unlock(&exitLock);
 }
 
 int lineSensor(int pin)
@@ -154,48 +144,36 @@ double sonarSensor(int pin, int trigger)
     clock_t echoUp, echoDown;
     float distance;
     while ((gpioRead(pin) == 0) && ((gpioTick() - start) < 14000))
-    { // wait up to 0.014 secs for echo input,
-
-        // echoUp = clock();                                        //
+    { // wait up to 0.014 secs for echo input,                                      //
     }                 // once we get echo input,
     echoUp = clock(); // keep track of how when we first receive echo input
     start = gpioTick();
     while ((gpioRead(pin) != 0) && ((gpioTick() - start) < 14000))
     { // wait up to 0.014 secs for echoing to stop
-
-        // echoDown = clock();
     }
     echoDown = clock();
-    // -- IMPORTANT -- : if sonar sensor freezes, its probably cos of this line
-    //  so if it freezes then add error handler to catch it
+
     float timeEchoedSecs; // keep track of when echo input stops
 
     timeEchoedSecs = (float)(echoDown - echoUp) / CLOCKS_PER_SEC; // calculate total uptime the echo input was up for
     distance = timeEchoedSecs * (float)SOUND_DIST_MULT * 100;     // calculate distance between sonar and object in cm
-    double doubleDist = (double)distance * 0.6;
-    // printf("time echoed in secs %f \n", timeEchoedSecs);
-
-    // printf("measured distance of %f centimeters\n", distance);
-    // printf("measured distance of %d centimeters\n", doubleDist);
-    if(doubleDist > 150){
-        doubleDist = 150;
+    double doubleDist = (double)distance;  
+    
+    if(doubleDist > SONAR_DIST_CAP){
+        doubleDist = SONAR_DIST_CAP;
     } 
     else if(doubleDist < 1){
-        //doubleDist = 200;
         usleep(5000);
         return sonarSensor(pin, trigger);
-    } /*else if(doubleDist == 0){
-        doubleDist = 1;
-    }*/
-    //printf("raw distance: %f cm\n", doubleDist);
+    } 
     return doubleDist;
 }
 
 int timedGPIOHigh(int trigger, int duration)
 { // takes gpio trigger pin, and duration in microseconds to seend HIGH (1) signal for
-    gpioWrite(trigger, 1);
+    gpioWrite(trigger, PI_HIGH);
     usleep(duration);
-    gpioWrite(trigger, 0);
+    gpioWrite(trigger, PI_LOW);
     return 0;
 }
 

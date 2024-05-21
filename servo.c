@@ -17,12 +17,6 @@
 
 int Servo_Init(void)
 {
-    // Initialize the pigpio library
-    // if (gpioInitialise() < 0)
-    // {
-    //     printf("Failed to initialize pigpio library\n");
-    //     return 1;
-    // }
     gpioSetMode(SERVO_PIN, PI_OUTPUT);
     gpioSetPWMfrequency(SERVO_PIN, PWD_FREQ);
     Pan_Forward();
