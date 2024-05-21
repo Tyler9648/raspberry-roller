@@ -28,6 +28,7 @@
 //#include "globals.h"   // global variables
 #include "servo.h"
 #define UPDATE_FREQ 50000
+#define BUTTON_GPIO 27
 
 /* GLOBAL VARIABLE INITIALIZATION */
 volatile sig_atomic_t exitThread = 0;
@@ -41,6 +42,23 @@ tArg *avoidSensorArgs;
 tArg *testArgs;
 tArg *sonarSensorArgs;
 tArg *multiLineSensorArgs;
+
+void waitForButton(int pin){          //waits until button is pressed and released
+
+    gpioSetMode(pin, PI_INPUT);
+    usleep(1000);
+    while(gpioRead(pin) == PI_LOW && exitThread == 0 ){
+        printf("waiting for button press\n");
+    }           //waiting for button push down
+    
+    while(gpioRead(pin) == PI_HIGH && exitThread == 0 ){
+        printf("waiting for button release\n");
+    }           //waiting for button to be released
+
+    
+    if (exitThread == 0)
+      printf("\nbutton pressed!\n\n");
+}
 
 void progExit(int sig)
 { // catch for ctr+c to exit so we can properly
@@ -63,8 +81,10 @@ int main(int argc, char *argv[])
     initSteering();
     Servo_Init();
     signal(SIGINT, progExit);
-    usleep(2500000);    
 
+
+    waitForButton(BUTTON_GPIO);
+    usleep(2500000);    
     while (exitThread == 0)
     {
         
