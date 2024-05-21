@@ -15,11 +15,15 @@
 extern volatile sig_atomic_t exitThread;
 
 #define BASE_SPEED 70
+#define STEER_FREQ_DELAY 5000  //how long steer loop takes to adjust in microsecs
+                                //higher delay means slower turning, and vice versa
+
 #define AVOIDANCE_SPEED 60 // base speed when going around in obstacle
 #define MIN_TURNING_SPEED -20
 #define DETECT_OBS_DIST 20
 #define MIN_OBS_DIST 12 //old 17
 #define MAX_OBS_DIST 28
+
 
 #define MIN_OBS_AVOID_SPEED (AVOIDANCE_SPEED - 25)
 #define MAX_OBS_AVOID_SPEED (AVOIDANCE_SPEED + 25)
@@ -54,7 +58,7 @@ int steer()
 {
     Motor_setVelocity(MOTORA, BASE_SPEED);
     Motor_setVelocity(MOTORB, BASE_SPEED);
-    int sleepVal = 10000;
+    int sleepVal = STEER_FREQ_DELAY;
 
     // Obstacle detected
     if (obsDetected() == 1)
