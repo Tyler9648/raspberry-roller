@@ -193,7 +193,6 @@ void sensorLibInit(void)
     // feel free to add more, if more sensors are added
     // must CREATE SEPERATE THREAD FOR EVERY SENSOR (unless theyre clustered)
     // sensor clusters must be added to sensorThread as if they're a completely new sensor
-    // IMPORTANT -- make sure main loop in car's main that reads sensor vals is protected w exitLock
 }
 
 void sensorLibTerminate(void)
