@@ -1,6 +1,9 @@
 /*****************************************
  * Class:: CSC-615-01 Spring 2024
  *
+ * Group Member Names:: Tyler Hsieh, Anthony Silva, Pedro Grande, Rafael Sant Ana Leitao
+ * SFSU IDs: 920216320, 922907645, 921149265, 922965105
+ * 
  * File:: sensorThread.h
  *
  * Description:: This header file defines the structures and enumerations for managing sensors

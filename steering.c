@@ -1,6 +1,9 @@
 /*******************************************************************************************************************
  * Class:: CSC-615-01 Spring 2024
- *
+ * 
+ * Group Member Names:: Tyler Hsieh, Anthony Silva, Pedro Grande, Rafael Sant Ana Leitao
+ * SFSU IDs: 920216320, 922907645, 921149265, 922965105
+ * 
  * Project:: Autonomous Line-Following Car
  *
  * File:: steering.c
@@ -8,31 +11,31 @@
  * Description:: This source file contains the implementation of the steering logic for the autonomous car project.
  *               It integrates sensor readings with motor control to dynamically adjust the car's steering based on
  *               its position relative to a track. Key functionalities include initializing and terminating steering
- *               mechanisms, executing basic steering commands (left, right, forward), and more complex maneuvers
- *               like error correction based on line detection and obstacle avoidance.
+ *               mechanisms, executing main steering function to keep itself on the line, remembering the last turn (prevSum), 
+ *               and more complex maneuvers like error correction based on sharp turns, intersections, and obstacle avoidance.
  ********************************************************************************************************************/
 #include "steering.h"
 extern volatile sig_atomic_t exitThread;
 
 #define BASE_SPEED 70
 #define STEER_FREQ_DELAY 5000  //how long steer loop takes to adjust in microsecs
-                                //higher delay means slower turning, and vice versa
+                               //higher delay means slower turning, and vice versa
+                
+#define OBS_FREQ_DELAY 8000    //similar to steer freq delay, affects how fast or slow
+                               //the car adjusts itself. higher delay means slower turning, and vice versa
 
 #define AVOIDANCE_SPEED 60 // base speed when going around in obstacle
-#define MIN_TURNING_SPEED -20
-#define DETECT_OBS_DIST 20
-#define MIN_OBS_DIST 12 //old 17
-#define MAX_OBS_DIST 28
+#define MIN_TURNING_SPEED -20   
+#define DETECT_OBS_DIST 20      //in cm
+#define MIN_OBS_DIST 12         //in cm
+#define MAX_OBS_DIST 28         //in cm
 
 
 #define MIN_OBS_AVOID_SPEED (AVOIDANCE_SPEED - 25)
 #define MAX_OBS_AVOID_SPEED (AVOIDANCE_SPEED + 25)
 
 double timeMiddleOnLine; // time before middle sensor left the line
-int prevSum = 0;
-// should we have 2 different functions for correcting the error on the line
-// and another for steering around an object?
-// CURRENTLY IT ONLY STEERS RIGHT
+int prevSum = 0;         // keeps track of last turn
 
 int initSteering()
 {
@@ -46,7 +49,7 @@ void terminateSteering()
 }
 
 int obsDetected(void){
-    if ((sonarSensorArgs->value <= DETECT_OBS_DIST && sonarSensorArgs->value > 0) || avoidSensorArgs->value == 0){   //recent
+    if ((sonarSensorArgs->value <= DETECT_OBS_DIST && sonarSensorArgs->value > 0) || avoidSensorArgs->value == 0){   //if obstacle detected
         return 1;
     } else {
         return 0;
@@ -98,7 +101,7 @@ void avoidObstacle()
     Motor_setVelocity(MOTORB, 0);
     usleep(1000000);
     Pan_Right();
-    // Turn left
+    // Turn car left, and sonar towards the obstacle
     Motor_setVelocity(MOTORA, -40);
     Motor_setVelocity(MOTORB, 40);
     usleep(1000000);
@@ -109,36 +112,36 @@ void avoidObstacle()
 
     Motor_setVelocity(MOTORA, AVOIDANCE_SPEED);
     Motor_setVelocity(MOTORB, AVOIDANCE_SPEED);
-    // loop aroun in circle intil
-    //  Move Forward
+    
+    //  Keep going around the obstacle until we find the line or Ctr + C
     while (multiLineSensorArgs->value3 != 1 && exitThread == 0)
     {
         printf("sonar distance: %d\n", sonarSensorArgs->value);
-        int motorAadjust = 1;
+        int motorAadjust = 1;                                 //how much to adjust motor speed by 
         int motorBadjust = 1;
 
-        if (sonarSensorArgs->value < MIN_OBS_DIST)            //too close to obstacle
+        if (sonarSensorArgs->value < MIN_OBS_DIST)            //we're too close to obstacle, so turn away
         {
-            if((motorASpeed - 1) <= MIN_OBS_AVOID_SPEED){
+            if((motorASpeed - 1) <= MIN_OBS_AVOID_SPEED){       //dont want to go too slow
                 motorAadjust = 0;
             }
-            if((motorBSpeed + 1) >= MAX_OBS_AVOID_SPEED){
+            if((motorBSpeed + 1) >= MAX_OBS_AVOID_SPEED){       //also dont want to go too fast
                 motorBadjust = 0;
             }
             if(sonarSensorArgs->value < MIN_OBS_DIST * 0.7){        //IF IT IS REALLY WAY TOO CLOSE TO THE OBSTACLE
-                motorAadjust *= 2;
+                motorAadjust *= 2;                                  //THEN ADJUST EVEN MORE
                 motorBadjust *= 2;
             }
             Motor_setVelocity(MOTORA, motorASpeed - motorAadjust);
             Motor_setVelocity(MOTORB, motorBSpeed + motorBadjust);
         }
-        else if (                                   //optimal distance
+        else if (                                              //optimal distance, so go straight
             (sonarSensorArgs->value < MAX_OBS_DIST))
             {
                 Motor_setVelocity(MOTORA, AVOIDANCE_SPEED);
                 Motor_setVelocity(MOTORB, AVOIDANCE_SPEED);
             }
-        else
+        else                                                   //were too far from obstacle, so turn towards it 
         {
             if((motorASpeed + 1) >= MAX_OBS_AVOID_SPEED){
                 motorAadjust = 0;
@@ -149,7 +152,7 @@ void avoidObstacle()
             Motor_setVelocity(MOTORA, motorASpeed + motorAadjust);
             Motor_setVelocity(MOTORB, motorBSpeed - motorBadjust);
         }
-        usleep(8000);      //old: 20000
+        usleep(OBS_FREQ_DELAY);      
     }
     Pan_Forward();
     printf("\nwere back on the line\n");
