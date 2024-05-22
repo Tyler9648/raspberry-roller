@@ -28,7 +28,6 @@
 #include <time.h>
 #include "sensorLib.h" // already includes sensorThread.h
 #include "steering.h"  // includes motor.h
-//#include "globals.h"   // global variables
 #include "servo.h"
 #define UPDATE_FREQ 50000
 #define BUTTON_GPIO 27
