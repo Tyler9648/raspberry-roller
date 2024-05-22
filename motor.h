@@ -1,6 +1,10 @@
 /*****************************************
  * Class:: CSC-615-01 Spring 2024
  *
+ * Group Member Names:: Tyler Hsieh, Anthony Silva, Pedro Grande, Rafael Sant Ana Leitao
+ * SFSU IDs: 920216320, 922907645, 921149265, 922965105
+ * Github Usernames: Tyler9648, anthonySilva23, PFGrande, Rafael-Leitao
+ * 
  * Project:: Autonomous Line-Following Car
  *
  * File:: motor.h
