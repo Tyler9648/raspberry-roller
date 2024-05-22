@@ -63,15 +63,13 @@ extern tArg *avoidSensorArgs;
 extern tArg *testArgs;
 extern tArg *sonarSensorArgs;
 
-int activeThreads; // uncomment if implemented with car
+int activeThreads; 
 
 pthread_t threadID[NUMTHREADS]; // sensor threads
 
 void sensorLibInit(void)
 { // handles creation of all sensor threads
-  // NOT used when testing main in sensorLib, only for car's main
-  // completely replaces main in sensorLib in car implementation
-
+  
     printf("# of sensors: %d\n", NUMTHREADS);
 
     // thread args are globals, declared in this sensorLib.c file
@@ -138,7 +136,7 @@ void sensorLibInit(void)
         pthread_create(&threadID[activeThreads], NULL, &sensor_thread, (void *)lineSensorFiveArgs);
         activeThreads++;
     }
-    if (ENABLE_MULTI_LINESENSOR == 1)
+    if (ENABLE_MULTI_LINESENSOR == 1)   // prepare and launch all 5 line sensors in a thread together
     {
         multiLineSensorArgs = (tArg *)malloc(sizeof(tArg));
         multiLineSensorArgs->senType = MULTI_LINE;
