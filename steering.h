@@ -25,7 +25,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "sensorLib.h" // temporarily here, not sure if should be here
+#include "sensorLib.h"
 #include "servo.h"
 
 extern tArg* multiLineSensorArgs;
