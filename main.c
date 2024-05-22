@@ -29,7 +29,7 @@
 #include "sensorLib.h" // already includes sensorThread.h
 #include "steering.h"  // includes motor.h
 #include "servo.h"
-#define UPDATE_FREQ 50000
+#define UPDATE_FREQ 50000   //controls frequency of main loop
 #define BUTTON_GPIO 27
 
 /* GLOBAL VARIABLE INITIALIZATION */
@@ -85,14 +85,14 @@ int main(int argc, char *argv[])
     signal(SIGINT, progExit);
 
 
-    waitForButton(BUTTON_GPIO);
+    waitForButton(BUTTON_GPIO);     //wait for button press
     usleep(2500000);    
-    while (exitThread == 0)
+    while (exitThread == 0)         //time to start driving!
     {
         
         printf("%d %d %d %d %d\n", multiLineSensorArgs->value5, multiLineSensorArgs->value4, multiLineSensorArgs->value3, multiLineSensorArgs->value2, multiLineSensorArgs->value1);
         
-        steer();
+        steer();                    //the only function that matters in here
 
         double avoidTimeSinceUpdate = (clock() / CLOCKS_PER_SEC) - avoidSensorArgs->lastSensorUpdateTime;
         printf("\nAvoid sensor last changed %f seconds ago\n", avoidTimeSinceUpdate);
@@ -108,11 +108,7 @@ int main(int argc, char *argv[])
         {
             printf("Sonar sensor: distance is %d\n", sonarSensorArgs->value);
         }
-        /*
-        if(testArgs->value >= 0) {
-            printf("test value displaying: %d\n", testArgs->value);
-        }*/
-        usleep(UPDATE_FREQ); //old 100000
+        usleep(UPDATE_FREQ);    //controls looping frequency
     }
     printf("now terminating\n");
     terminateSteering();
