@@ -26,11 +26,10 @@
 #include <math.h>
 #include "sensorThread.h"
 
-#define SOUND_DIST_MULT 170
-#define SONAR_DIST_CAP 150
+#define SOUND_DIST_MULT 170 // speed of sound / 2   (since we must wait for sound wave to travel and then bounce back)
+#define SONAR_DIST_CAP 150  //sonar gets too innacurate with distances past 150 cm
 
 extern volatile sig_atomic_t exitThread;
-extern pthread_mutex_t exitLock;
 
 void *sensor_thread(void *arg)
 {                                   // thread function that constantly reads a
@@ -59,7 +58,7 @@ void *sensor_thread(void *arg)
         }
         break;
 
-    case MULTI_LINE:
+    case MULTI_LINE:  // cluster of 5 line sensors 
         gpioSetMode(sensorArgs->pin1, PI_INPUT);
         gpioSetMode(sensorArgs->pin2, PI_INPUT);
         gpioSetMode(sensorArgs->pin3, PI_INPUT);
@@ -109,9 +108,9 @@ void *sensor_thread(void *arg)
             qsort(distArr, 5, sizeof(double), comp);
             double tempVal = distArr[2];
             
-            sensorArgs->value = floor( (tempVal * 0.5) + (sensorArgs->value * 0.5) );   //  reducees effect of sharp changes/outliers 
+            sensorArgs->value = floor( (tempVal * 0.5) + (sensorArgs->value * 0.5) );   //  reduces effect of sharp changes/outliers 
                                                                                         //  from sonar readings 
-            usleep(1000);   //OLD: 5000
+            usleep(1000);   
         }
         break;
     default: // invalid sensor type
@@ -120,11 +119,9 @@ void *sensor_thread(void *arg)
     }
 
     // exit thread now
-    //pthread_mutex_lock(&exitLock); // mutex lock to protect argument deallocation
     printf("\nfreeing allocated thread args in thread: %d\n", pthread_self());
     free(arg); // free arg that was malloced from main, move this to main later
     arg = NULL;
-    //pthread_mutex_unlock(&exitLock);
 }
 
 int lineSensor(int pin)
@@ -165,7 +162,7 @@ double sonarSensor(int pin, int trigger)
     if(doubleDist > SONAR_DIST_CAP){
         doubleDist = SONAR_DIST_CAP;
     } 
-    else if(doubleDist < 1){
+    else if(doubleDist < 1){         //call until we get a proper reading, anything less than 1 is invalid
         usleep(5000);
         return sonarSensor(pin, trigger);
     } 

@@ -1,6 +1,9 @@
 /*****************************************
  * Class:: CSC-615-01 Spring 2024
  *
+ * Group Member Names:: Tyler Hsieh, Anthony Silva, Pedro Grande, Rafael Sant Ana Leitao
+ * SFSU IDs: 920216320, 922907645, 921149265, 922965105
+ * 
  * Project:: Autonomous Line-Following Car
  *
  * File:: motor.c
@@ -37,7 +40,7 @@ int Motor_Init(void)
 } // higher frequency means that changing and
   // maintaining motor speed is smoother
 
-void Motor_Terminate(void)
+void Motor_Terminate(void)  //stops motors
 {
     Motor_setVelocity(MOTORA, 0);
     Motor_setVelocity(MOTORB, 0);
@@ -146,8 +149,7 @@ void Motor_Accelerate(uint8_t motor, int startVelocity, int endVelocity, int dur
         current_t = clock(); // current number of clock ticks
 
         double durationSecs = duration / SEC_TO_MICROSEC;
-        // REMINDER TO TEST THIS CHANGE LATER ->    duration_t = duration / 10
-        int currVelocity;                             // AND TO TEST w/o durationSecs cos im an idiot
+        int currVelocity;                           
         duration_t = durationSecs * CLOCKS_PER_SEC_O; // convert duration from seconds to clock_t (clock ticks per sec)
 
         end_t = start_t + duration_t;
